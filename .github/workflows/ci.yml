@@ -97,3 +97,6 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "0"
+    permissions:
+      contents: read
+      id-token: write
