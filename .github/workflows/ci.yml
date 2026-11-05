@@ -100,3 +100,32 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::570220875724:role/TaskBoardGitHubActionsRole
+          aws-region: ap-south-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Push backend image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag taskboard-backend:ci $ECR_REGISTRY/taskboard-backend:latest
+          docker tag taskboard-backend:ci $ECR_REGISTRY/taskboard-backend:${{ github.sha }}
+          docker push $ECR_REGISTRY/taskboard-backend:latest
+          docker push $ECR_REGISTRY/taskboard-backend:${{ github.sha }}
+
+      - name: Push frontend image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag taskboard-frontend:ci $ECR_REGISTRY/taskboard-frontend:latest
+          docker tag taskboard-frontend:ci $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
+          docker push $ECR_REGISTRY/taskboard-frontend:latest
+          docker push $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
+
