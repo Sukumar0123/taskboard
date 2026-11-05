@@ -69,6 +69,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: false
+          Load: true
           tags: taskboard-backend:ci
 
       - name: Build frontend image
@@ -77,6 +78,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: false
+          Load: true
           tags: taskboard-frontend:ci
       - name: Scan backend image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
