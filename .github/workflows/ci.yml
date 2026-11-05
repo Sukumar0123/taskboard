@@ -52,13 +52,12 @@ jobs:
         run: npm run build
 
   docker-build:
-    name: Docker Build, Security Scan and ECR Push
+    name: Docker Build and Security Scan
     needs: [backend-check, frontend-check]
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -103,6 +102,21 @@ jobs:
           ignore-unfixed: true
           exit-code: "0"
 
+  publish-ecr:
+    name: Publish Docker Images to AWS ECR
+    needs: [backend-check, frontend-check, docker-build]
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -113,20 +127,22 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Push backend image to ECR
+      - name: Build and push backend image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker tag taskboard-backend:ci $ECR_REGISTRY/taskboard-backend:latest
-          docker tag taskboard-backend:ci $ECR_REGISTRY/taskboard-backend:${{ github.sha }}
+          docker build -t taskboard-backend:latest ./backend
+          docker tag taskboard-backend:latest $ECR_REGISTRY/taskboard-backend:latest
+          docker tag taskboard-backend:latest $ECR_REGISTRY/taskboard-backend:${{ github.sha }}
           docker push $ECR_REGISTRY/taskboard-backend:latest
           docker push $ECR_REGISTRY/taskboard-backend:${{ github.sha }}
 
-      - name: Push frontend image to ECR
+      - name: Build and push frontend image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker tag taskboard-frontend:ci $ECR_REGISTRY/taskboard-frontend:latest
-          docker tag taskboard-frontend:ci $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
+          docker build -t taskboard-frontend:latest ./frontend
+          docker tag taskboard-frontend:latest $ECR_REGISTRY/taskboard-frontend:latest
+          docker tag taskboard-frontend:latest $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
           docker push $ECR_REGISTRY/taskboard-frontend:latest
           docker push $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
