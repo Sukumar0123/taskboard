@@ -1,0 +1,55 @@
+.app {
+  min-height: 100vh;
+  background: #f4f5fb;
+}
+
+.header {
+  background: #6d5efc;
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.task-form {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.task-form input {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 7px;
+  background: #6d5efc;
+  color: white;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 16px;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}
