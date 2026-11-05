@@ -52,9 +52,13 @@ jobs:
         run: npm run build
 
   docker-build:
-    name: Docker Image Build
+    name: Docker Build, Security Scan and ECR Push
     needs: [backend-check, frontend-check]
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -69,7 +73,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: false
-          Load: true
+          load: true
           tags: taskboard-backend:ci
 
       - name: Build frontend image
@@ -78,8 +82,9 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: false
-          Load: true
+          load: true
           tags: taskboard-frontend:ci
+
       - name: Scan backend image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -97,10 +102,7 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "0"
-    permissions:
-      contents: read
-      id-token: write
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -128,4 +130,3 @@ jobs:
           docker tag taskboard-frontend:ci $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
           docker push $ECR_REGISTRY/taskboard-frontend:latest
           docker push $ECR_REGISTRY/taskboard-frontend:${{ github.sha }}
-
