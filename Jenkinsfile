@@ -23,16 +23,17 @@ pipeline {
             }
         }
 
-        stage('Backend Validation') {
-            steps {
-                sh '''
-                    docker run --rm \
-                    --entrypoint python \
-                    taskboard-backend:jenkins \
-                    -m compileall -q /app
-                '''
-            }
-        }
+       
+stage('Backend Validation') {
+    steps {
+        sh '''
+            docker run --rm \
+            --entrypoint python \
+            taskboard-backend:jenkins \
+            -c "import ast,pathlib; files=list(pathlib.Path('/app').rglob('*.py')); [ast.parse(p.read_text(encoding='utf-8'), filename=str(p)) for p in files]; print('Python syntax validation passed:', len(files), 'files checked')"
+        '''
+    }
+}
 
         stage('Backend Tests') {
             steps {
